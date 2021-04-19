@@ -1,0 +1,192 @@
+package com.engagecraft.touchplatformdemo
+
+import android.app.Activity
+import android.content.Intent
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.text.TextUtils
+import android.view.*
+import android.widget.FrameLayout
+import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.engagecraft.touchplatformsdk.TouchPlatformSDK
+
+class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val SETTINGS_REQUEST = 100
+    }
+
+    private lateinit var list: RecyclerView
+    private lateinit var itemDecoration: DividerItemDecoration
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        PreferenceManager.setDefaultValues(this@MainActivity, R.xml.settings, false)
+        findViewById<RecyclerView>(R.id.list).apply {
+            list = this
+            layoutManager = LinearLayoutManager(this@MainActivity)
+        }
+        itemDecoration = DividerItemDecoration(this@MainActivity, DividerItemDecoration.VERTICAL)
+        setupList()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_settings -> {
+                openSettings()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == SETTINGS_REQUEST) {
+            when (resultCode) {
+                Activity.RESULT_OK -> list.adapter?.notifyDataSetChanged()
+                SettingsActivity.RESULT_RELOAD -> setupList()
+                SettingsActivity.RESULT_AUTH -> {
+                    val userId = getValue(R.string.settings_user_id)
+                    if (TextUtils.isEmpty(userId))
+                        TouchPlatformSDK.logout()
+                    else
+                        TouchPlatformSDK.login(userId!!)
+                }
+            }
+        }
+    }
+
+    private fun setupList() {
+        list.apply {
+            if (useCards()) {
+                removeItemDecoration(itemDecoration)
+            } else {
+                addItemDecoration(itemDecoration)
+            }
+            adapter = Adapter()
+        }
+    }
+
+    private fun openSettings() {
+        startActivityForResult(
+            Intent(this, SettingsActivity::class.java),
+            SETTINGS_REQUEST
+        )
+    }
+
+    private fun getSettings() : SharedPreferences {
+        return PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+    }
+
+    private fun getValue(@StringRes id: Int) : String? {
+        return getSettings().getString(getString(id), null)
+    }
+
+    private fun useCards() : Boolean {
+        return getSettings().getBoolean(getString(R.string.settings_use_cards), false)
+    }
+
+    private fun setupWidget(parent: ViewGroup) {
+        parent.removeAllViews()
+
+        getValue(R.string.settings_client_id)?.let {
+            // init SDK because settings may change
+            TouchPlatformSDK.init(
+                it,
+                getValue(R.string.settings_environment),
+                getValue(R.string.settings_language),
+                getSettings().getBoolean(getString(R.string.settings_preview), false),
+                object : TouchPlatformSDK.Listener {
+                    override fun showLogin() {
+                        openSettings()
+                    }
+                    override fun isLoggedIn(): Boolean {
+                        return !TextUtils.isEmpty(getValue(R.string.settings_user_id))
+                    }
+                    override fun getUserID(): String? {
+                        return getValue(R.string.settings_user_id)
+                    }
+                }
+            )
+
+            getValue(R.string.settings_widget_id)?.let { widgetId ->
+                parent.addView(TouchPlatformSDK.getWidget(this@MainActivity, widgetId))
+            }
+        } ?: run {
+            openSettings()
+        }
+    }
+
+    private fun getItemWrapper(parent: ViewGroup) : FrameLayout {
+        return if (useCards()) {
+            LayoutInflater.from(parent.context).inflate(R.layout.item_card, parent, false) as FrameLayout
+        } else {
+            FrameLayout(parent.context)
+        }
+    }
+
+    abstract inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        abstract fun onBind(position: Int)
+    }
+
+    inner class ItemViewHolder(parent: ViewGroup) : ViewHolder(
+        getItemWrapper(parent).apply {
+            addView(LayoutInflater.from(parent.context).inflate(R.layout.item_simple, parent, false))
+        }
+    ) {
+        override fun onBind(position: Int) {
+            itemView.findViewById<TextView>(R.id.text).text = String.format("Feed item #%s", position + 1)
+            itemView.setOnClickListener {
+                Toast.makeText(itemView.context, String.format("Clicked on #%s", position + 1), Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    inner class WidgetViewHolder(parent: ViewGroup) : ViewHolder(getItemWrapper(parent)) {
+        override fun onBind(position: Int) {
+            setupWidget(itemView as ViewGroup)
+        }
+    }
+
+    inner class Adapter : RecyclerView.Adapter<ViewHolder>() {
+        private val items = 10
+        private val widgetPos = 3
+
+        private val typeItem = 0
+        private val typeWidget = 1
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            return when (viewType) {
+                typeWidget -> WidgetViewHolder(parent)
+                else -> ItemViewHolder(parent)
+            }
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            holder.onBind(position)
+        }
+
+        override fun getItemViewType(position: Int): Int {
+            return if (position == widgetPos) typeWidget else typeItem
+        }
+
+        override fun getItemCount(): Int {
+            return items
+        }
+    }
+
+}

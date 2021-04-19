@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory
+        android:title="Main">
+        <EditTextPreference
+            android:key="@string/settings_client_id"
+            android:icon="@drawable/ic_client"
+            android:title="Client ID"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            android:key="@string/settings_widget_id"
+            android:title="Widget ID"
+            android:icon="@drawable/ic_widget"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            android:key="@string/settings_user_id"
+            android:title="User ID"
+            android:icon="@drawable/ic_user"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            android:key="@string/settings_language"
+            android:title="Language"
+            android:icon="@drawable/ic_language"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            android:key="@string/settings_preview"
+            android:icon="@drawable/ic_preview"
+            android:title="Preview mode" />
+        <ListPreference
+            android:key="@string/settings_environment"
+            android:icon="@drawable/ic_environment"
+            android:title="Environment"
+            android:entries="@array/settings_environment_items"
+            android:entryValues="@array/settings_environment_values"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Other">
+        <SwitchPreference
+            android:key="@string/settings_use_cards"
+            android:icon="@drawable/ic_use_cards"
+            android:title="Use Cards"
+            android:defaultValue="true"/>
+    </PreferenceCategory>
+</PreferenceScreen>

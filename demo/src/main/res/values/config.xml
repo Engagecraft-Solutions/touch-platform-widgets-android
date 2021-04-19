@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_client_id" translatable="false">client_id</string>
+    <string name="settings_widget_id" translatable="false">widget_id</string>
+    <string name="settings_user_id" translatable="false">user_id</string>
+    <string name="settings_language" translatable="false">language</string>
+    <string name="settings_preview" translatable="false">preview</string>
+    <string name="settings_use_cards" translatable="false">use_cards</string>
+    <string name="settings_environment" translatable="false">environment</string>
+    <string-array name="settings_environment_items">
+        <item>int</item>
+        <item>pre</item>
+        <item>prod</item>
+    </string-array>
+    <string-array name="settings_environment_values">
+        <item>debug</item>
+        <item>pre</item>
+        <item>release</item>
+    </string-array>
+</resources>
