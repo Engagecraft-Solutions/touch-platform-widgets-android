@@ -6,7 +6,6 @@ import android.net.Uri
 import android.util.TypedValue
 import android.view.ViewGroup
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -101,7 +100,6 @@ internal class Widget(context: Context) : FrameLayout(context) {
                 layoutParams = LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getSize(context, height))
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
-                webViewClient = WebViewClient()
                 addJavascriptInterface(JSInterface(this.context), JSInterface.NAME)
                 loadUrl(getWidgetUrl())
                 Util.debug("Starting widget: $url")

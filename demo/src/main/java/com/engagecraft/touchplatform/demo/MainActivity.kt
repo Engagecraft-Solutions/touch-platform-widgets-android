@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity() {
                 parent.addView(TouchPlatformSDK.getWidget(
                     this@MainActivity,
                     widgetId,
-                    "https://${getString(R.string.app_link)}/widget"
+                    getDeepLink()
                 ))
             }
         } ?: run {
@@ -158,6 +158,11 @@ class MainActivity : AppCompatActivity() {
                 layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
         }
+    }
+
+    private fun getDeepLink() : String {
+        val scheme = if (getBooleanValue(R.string.settings_use_custom_scheme)) BuildConfig.APPLICATION_ID else "https"
+        return "$scheme://${getString(R.string.app_link)}/widget"
     }
 
     abstract inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

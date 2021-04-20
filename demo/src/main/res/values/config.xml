@@ -7,6 +7,7 @@
     <string name="settings_preview" translatable="false">preview</string>
     <string name="settings_debug" translatable="false">debug</string>
     <string name="settings_use_cards" translatable="false">use_cards</string>
+    <string name="settings_use_custom_scheme" translatable="false">use_custom_scheme</string>
     <string name="settings_environment" translatable="false">environment</string>
     <string-array name="settings_environment_items">
         <item>int</item>

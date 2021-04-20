@@ -27,7 +27,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         all {
-            resValue "string", "app_link", "demo.app.touch.global"
+            resValue "string", "app_link", "demo-app.touch.global"
         }
     }
     compileOptions {

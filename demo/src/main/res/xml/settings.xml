@@ -27,11 +27,13 @@
         <SwitchPreference
             android:key="@string/settings_preview"
             android:icon="@drawable/ic_preview"
-            android:title="Preview mode" />
+            android:title="Preview mode"
+            android:defaultValue="false" />
         <SwitchPreference
             android:key="@string/settings_debug"
             android:icon="@drawable/ic_debug"
-            android:title="Debug mode" />
+            android:title="Debug mode"
+            android:defaultValue="false" />
         <ListPreference
             android:key="@string/settings_environment"
             android:icon="@drawable/ic_environment"
@@ -47,5 +49,10 @@
             android:icon="@drawable/ic_use_cards"
             android:title="Use Cards"
             android:defaultValue="true"/>
+        <SwitchPreference
+            android:key="@string/settings_use_custom_scheme"
+            android:icon="@drawable/ic_share"
+            android:title="Use Custom Scheme for sharing"
+            android:defaultValue="false"/>
     </PreferenceCategory>
 </PreferenceScreen>
