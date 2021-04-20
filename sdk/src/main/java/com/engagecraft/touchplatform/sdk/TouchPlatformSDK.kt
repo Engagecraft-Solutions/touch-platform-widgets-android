@@ -1,27 +1,18 @@
-package com.engagecraft.touchplatformsdk
+package com.engagecraft.touchplatform.sdk
 
 import android.content.Context
 import android.view.View
-import androidx.annotation.StringDef
+import org.json.JSONObject
 
 class TouchPlatformSDK {
     companion object {
 
-        const val ENV_INT = "debug"
-        const val ENV_PRE = "pre"
-        const val ENV_PROD = "release"
-        @StringDef(ENV_INT, ENV_PRE, ENV_PROD)
-        @Retention(AnnotationRetention.SOURCE)
-        annotation class Env
-
-        internal var environment: String = BuildConfig.BUILD_TYPE
         internal var clientId: String? = null
         internal var language: String? = null
         internal var preview: Boolean = false
         internal var listener: Listener? = null
 
-        fun init(clientId: String, @Env environment: String? = null, language: String? = null, preview: Boolean = false, listener: Listener? = null) {
-            environment?.let { TouchPlatformSDK.environment = it }
+        fun init(clientId: String, language: String? = null, preview: Boolean = false, listener: Listener? = null) {
             TouchPlatformSDK.clientId = clientId
             TouchPlatformSDK.language = language
             TouchPlatformSDK.preview = preview
@@ -38,7 +29,7 @@ class TouchPlatformSDK {
 
         fun login(userId: String) {
             AuthManager.login(userId)
-            Widget.notify(JSInterface.EVENT_LOGIN)
+            Widget.notify(JSInterface.EVENT_LOGIN, JSONObject().apply { put(Widget.PARAM_USER_ID, userId) })
         }
 
         fun logout() {
@@ -46,15 +37,14 @@ class TouchPlatformSDK {
             Widget.notify(JSInterface.EVENT_LOGOUT)
         }
 
-        fun getWidget(context: Context, id: String) : View {
-            return Widget.create(context, id)
+        fun getWidget(context: Context, id: String, location: String? = null) : View {
+            return Widget.create(context, id, location)
         }
 
     }
 
     interface Listener {
         fun showLogin()
-        fun isLoggedIn() : Boolean
-        fun getUserID() : String?
     }
+
 }

@@ -1,4 +1,4 @@
-package com.engagecraft.touchplatformsdk
+package com.engagecraft.touchplatform.sdk
 
 internal class AuthManager {
     companion object {

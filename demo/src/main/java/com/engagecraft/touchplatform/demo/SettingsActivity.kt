@@ -1,4 +1,4 @@
-package com.engagecraft.touchplatformdemo
+package com.engagecraft.touchplatform.demo
 
 import android.app.Activity
 import android.content.SharedPreferences
@@ -41,7 +41,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         override fun onSharedPreferenceChanged(sp: SharedPreferences, key: String) {
-            if (key == getString(R.string.settings_use_cards)) {
+            if (key == getString(R.string.settings_use_cards) || key == getString(R.string.settings_preview) || key == getString(R.string.settings_debug)) {
                 reloadResult = true
             }
             authResult = authResult && key == getString(R.string.settings_user_id)

@@ -1,4 +1,4 @@
-package com.engagecraft.touchplatformdemo
+package com.engagecraft.touchplatform.demo
 
 import android.app.Activity
 import android.content.Intent
@@ -15,7 +15,9 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.engagecraft.touchplatformsdk.TouchPlatformSDK
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.engagecraft.touchplatform.sdk.Environment
+import com.engagecraft.touchplatform.sdk.TouchPlatformSDK
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,6 +25,7 @@ class MainActivity : AppCompatActivity() {
         const val SETTINGS_REQUEST = 100
     }
 
+    private lateinit var refresh: SwipeRefreshLayout
     private lateinit var list: RecyclerView
     private lateinit var itemDecoration: DividerItemDecoration
 
@@ -30,6 +33,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         PreferenceManager.setDefaultValues(this@MainActivity, R.xml.settings, false)
+        findViewById<SwipeRefreshLayout>(R.id.swipeRefresh).apply {
+            refresh = this
+            setOnRefreshListener {
+                setupList()
+            }
+        }
         findViewById<RecyclerView>(R.id.list).apply {
             list = this
             layoutManager = LinearLayoutManager(this@MainActivity)
@@ -59,13 +68,7 @@ class MainActivity : AppCompatActivity() {
             when (resultCode) {
                 Activity.RESULT_OK -> list.adapter?.notifyDataSetChanged()
                 SettingsActivity.RESULT_RELOAD -> setupList()
-                SettingsActivity.RESULT_AUTH -> {
-                    val userId = getValue(R.string.settings_user_id)
-                    if (TextUtils.isEmpty(userId))
-                        TouchPlatformSDK.logout()
-                    else
-                        TouchPlatformSDK.login(userId!!)
-                }
+                SettingsActivity.RESULT_AUTH -> setupWidgetAuthState()
             }
         }
     }
@@ -79,6 +82,7 @@ class MainActivity : AppCompatActivity() {
             }
             adapter = Adapter()
         }
+        refresh.isRefreshing = false
     }
 
     private fun openSettings() {
@@ -95,9 +99,12 @@ class MainActivity : AppCompatActivity() {
     private fun getValue(@StringRes id: Int) : String? {
         return getSettings().getString(getString(id), null)
     }
+    private fun getBooleanValue(@StringRes id: Int) : Boolean {
+        return getSettings().getBoolean(getString(id), false)
+    }
 
     private fun useCards() : Boolean {
-        return getSettings().getBoolean(getString(R.string.settings_use_cards), false)
+        return getBooleanValue(R.string.settings_use_cards)
     }
 
     private fun setupWidget(parent: ViewGroup) {
@@ -107,35 +114,49 @@ class MainActivity : AppCompatActivity() {
             // init SDK because settings may change
             TouchPlatformSDK.init(
                 it,
-                getValue(R.string.settings_environment),
                 getValue(R.string.settings_language),
-                getSettings().getBoolean(getString(R.string.settings_preview), false),
+                getBooleanValue(R.string.settings_preview),
                 object : TouchPlatformSDK.Listener {
                     override fun showLogin() {
                         openSettings()
                     }
-                    override fun isLoggedIn(): Boolean {
-                        return !TextUtils.isEmpty(getValue(R.string.settings_user_id))
-                    }
-                    override fun getUserID(): String? {
-                        return getValue(R.string.settings_user_id)
-                    }
                 }
             )
 
+            setupWidgetAuthState()
+
+            getValue(R.string.settings_environment)?.let { env ->
+                Environment.setEnvironment(env)
+            }
+            Environment.setDebugMode(getBooleanValue(R.string.settings_debug))
+
             getValue(R.string.settings_widget_id)?.let { widgetId ->
-                parent.addView(TouchPlatformSDK.getWidget(this@MainActivity, widgetId))
+                parent.addView(TouchPlatformSDK.getWidget(
+                    this@MainActivity,
+                    widgetId,
+                    "https://${getString(R.string.app_link)}/widget"
+                ))
             }
         } ?: run {
             openSettings()
         }
     }
 
+    private fun setupWidgetAuthState() {
+        val userId = getValue(R.string.settings_user_id)
+        if (TextUtils.isEmpty(userId))
+            TouchPlatformSDK.logout()
+        else
+            TouchPlatformSDK.login(userId!!)
+    }
+
     private fun getItemWrapper(parent: ViewGroup) : FrameLayout {
         return if (useCards()) {
             LayoutInflater.from(parent.context).inflate(R.layout.item_card, parent, false) as FrameLayout
         } else {
-            FrameLayout(parent.context)
+            FrameLayout(parent.context).apply {
+                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            }
         }
     }
 

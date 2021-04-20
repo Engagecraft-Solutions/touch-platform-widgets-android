@@ -1,4 +1,4 @@
-package com.engagecraft.touchplatformsdk
+package com.engagecraft.touchplatform.sdk
 
 import com.google.gson.annotations.SerializedName
 import okhttp3.OkHttpClient
@@ -19,8 +19,8 @@ internal class Backend {
         private var apiEnv : String? = null
 
         fun get() : Interface {
-            if (service == null || apiEnv != TouchPlatformSDK.environment) {
-                apiEnv = TouchPlatformSDK.environment
+            if (service == null || apiEnv != Environment.current) {
+                apiEnv = Environment.current
                 val retrofit = Retrofit.Builder()
                     .baseUrl(Util.prepareUrl(URL))
                     .client(OkHttpClient.Builder().apply {
@@ -57,6 +57,10 @@ internal class Backend {
 
     data class Availability(
         @SerializedName("available") var available: Boolean,
+        @SerializedName("params") var params: Params?
+    )
+
+    data class Params(
         @SerializedName("height") var height: Int
     )
 

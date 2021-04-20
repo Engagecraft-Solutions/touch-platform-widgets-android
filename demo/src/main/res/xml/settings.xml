@@ -28,6 +28,10 @@
             android:key="@string/settings_preview"
             android:icon="@drawable/ic_preview"
             android:title="Preview mode" />
+        <SwitchPreference
+            android:key="@string/settings_debug"
+            android:icon="@drawable/ic_debug"
+            android:title="Debug mode" />
         <ListPreference
             android:key="@string/settings_environment"
             android:icon="@drawable/ic_environment"

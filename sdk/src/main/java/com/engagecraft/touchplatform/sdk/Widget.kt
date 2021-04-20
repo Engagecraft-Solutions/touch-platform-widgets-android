@@ -1,4 +1,4 @@
-package com.engagecraft.touchplatformsdk
+package com.engagecraft.touchplatform.sdk
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -11,15 +11,18 @@ import android.widget.FrameLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 internal class Widget(context: Context) : FrameLayout(context) {
     companion object {
         private const val URL = "https://widgets%s.touch.global/js/vendor/static/app.html"
         private const val PARAM_HASH = "hash"
         private const val PARAM_CLIENT_ID = "clientID"
-        private const val PARAM_USER_ID = "userID"
         private const val PARAM_LANG = "language"
         private const val PARAM_PREVIEW = "preview"
+        private const val PARAM_DEBUG = "debug"
+        private const val PARAM_LOCATION = "location"
+        internal const val PARAM_USER_ID = "userID"
 
         private val listeners: MutableList<Widget> = mutableListOf()
         private fun addListener(widget: Widget) {
@@ -28,9 +31,9 @@ internal class Widget(context: Context) : FrameLayout(context) {
         private fun removeListener(widget: Widget) {
             listeners.remove(widget)
         }
-        fun notify(event: String) {
+        fun notify(event: String, data: JSONObject? = null) {
             listeners.forEach {
-                JSInterface.notify(it.getChildAt(0) as WebView, event)
+                JSInterface.notify(it.getChildAt(0) as WebView, event, data)
             }
         }
 
@@ -42,41 +45,53 @@ internal class Widget(context: Context) : FrameLayout(context) {
             ).toInt()
         }
 
-        private fun getUrl(id: String) : String {
-            return Uri.parse(Util.prepareUrl(URL)).buildUpon().apply {
-                appendQueryParameter(PARAM_HASH, id)
-                appendQueryParameter(PARAM_PREVIEW, (if (TouchPlatformSDK.preview) 1 else 0).toString())
-                TouchPlatformSDK.clientId?.let { appendQueryParameter(PARAM_CLIENT_ID, it) }
-                TouchPlatformSDK.language?.let { appendQueryParameter(PARAM_LANG, it) }
-                AuthManager.getUserId()?.let { appendQueryParameter(PARAM_USER_ID, it) }
-            }.build().toString()
-        }
-
-        fun create(context: Context, id: String) : Widget {
+        fun create(context: Context, id: String, location: String? = null) : Widget {
             return Widget(context).apply {
                 setWidgetId(id)
+                setLocation(location)
             }
         }
     }
 
     private lateinit var widgetId: String
+    private var location: String? = null
 
     private fun setWidgetId(id: String) {
-        widgetId = id
+        this.widgetId = id
+    }
+
+    private fun setLocation(location: String?) {
+        this.location = location
     }
 
     private suspend fun setup() {
         if (childCount == 0) {
-            Backend.get().availability(widgetId)?.data?.let {
-                if (it.available) {
-                    show(it.height)
-                } else {
-                    hide()
-                }
-            } ?: hide()
+            try {
+                Backend.get().availability(widgetId)?.data?.let {
+                    if (it.available) {
+                        show(it.params?.height ?: 0)
+                    } else {
+                        hide()
+                    }
+                } ?: hide()
+            } catch (e: Exception) {
+                hide()
+            }
         } else {
            // TODO. re-added. "refresh" the widget - send onLogin/onLogout?
         }
+    }
+
+    private fun getWidgetUrl() : String {
+        return Uri.parse(Util.prepareUrl(URL)).buildUpon().apply {
+            appendQueryParameter(PARAM_HASH, widgetId)
+            appendQueryParameter(PARAM_PREVIEW, TouchPlatformSDK.preview.toString())
+            appendQueryParameter(PARAM_DEBUG, Environment.isDebug.toString())
+            TouchPlatformSDK.clientId?.let { appendQueryParameter(PARAM_CLIENT_ID, it) }
+            TouchPlatformSDK.language?.let { appendQueryParameter(PARAM_LANG, it) }
+            AuthManager.getUserId()?.let { appendQueryParameter(PARAM_USER_ID, it) }
+            location?.let { appendQueryParameter(PARAM_LOCATION, it) }
+        }.build().toString()
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -87,8 +102,9 @@ internal class Widget(context: Context) : FrameLayout(context) {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 webViewClient = WebViewClient()
-                addJavascriptInterface(JSInterface(), JSInterface.NAME)
-                loadUrl(getUrl(widgetId))
+                addJavascriptInterface(JSInterface(this.context), JSInterface.NAME)
+                loadUrl(getWidgetUrl())
+                Util.debug("Starting widget: $url")
             })
         }
     }
