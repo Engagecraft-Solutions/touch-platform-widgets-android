@@ -18,9 +18,9 @@ internal class JSInterface(private val context: Context, private val widgetId: S
         const val EVENT_LOGIN = "onLogin"
         const val EVENT_LOGOUT = "onLogout"
 
-        fun notify(view: WebView, event: String, data: JSONObject?) {
+        fun notify(view: WebView?, event: String, data: JSONObject? = null) {
             val jsEvent = "(function() { window.$PLATFORM_NAME.events.emit('$event', ${data?.toString() ?: "null"}); })();"
-            view.evaluateJavascript(jsEvent, null)
+            view?.evaluateJavascript(jsEvent, null)
             Util.debug("Emitting JS event: $jsEvent")
         }
     }

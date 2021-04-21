@@ -2,7 +2,6 @@ package com.engagecraft.touchplatform.sdk
 
 import android.content.Context
 import android.view.View
-import org.json.JSONObject
 
 class TouchPlatformSDK {
     companion object {
@@ -29,15 +28,16 @@ class TouchPlatformSDK {
 
         fun login(userId: String) {
             AuthManager.login(userId)
-            Widget.notify(JSInterface.EVENT_LOGIN, JSONObject().apply { put(Widget.PARAM_USER_ID, userId) })
         }
 
         fun logout() {
             AuthManager.logout()
-            Widget.notify(JSInterface.EVENT_LOGOUT)
         }
 
         fun getWidget(context: Context, id: String, location: String? = null) : View {
+            if (clientId == null) {
+                throw Error("TouchPlatformSDK is not initialized!")
+            }
             return Widget.create(context, id, location)
         }
 

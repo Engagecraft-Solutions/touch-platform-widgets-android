@@ -32,7 +32,7 @@ internal class Widget(context: Context) : FrameLayout(context) {
         }
         fun notify(event: String, data: JSONObject? = null) {
             listeners.forEach {
-                JSInterface.notify(it.getChildAt(0) as WebView, event, data)
+                JSInterface.notify(it.getWidget(), event, data)
             }
         }
 
@@ -63,21 +63,27 @@ internal class Widget(context: Context) : FrameLayout(context) {
         this.location = location
     }
 
-    private suspend fun setup() {
-        if (childCount == 0) {
-            try {
-                Backend.get().availability(widgetId)?.data?.let {
-                    if (it.available) {
-                        show(it.params?.height ?: 0)
-                    } else {
-                        hide()
-                    }
-                } ?: hide()
-            } catch (e: Exception) {
-                hide()
+    private fun setup() {
+        getWidget()?.let { widget ->
+            AuthManager.getUserId()?.let {
+                JSInterface.notify(widget, JSInterface.EVENT_LOGIN, JSONObject().apply { put(PARAM_USER_ID, it) })
+            } ?: run {
+                JSInterface.notify(widget, JSInterface.EVENT_LOGOUT)
             }
-        } else {
-           // TODO. re-added. "refresh" the widget - send onLogin/onLogout?
+        } ?: run {
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    Backend.get().availability(widgetId)?.data?.let {
+                        if (it.available) {
+                            show(it.params?.height ?: 0)
+                        } else {
+                            hide()
+                        }
+                    } ?: hide()
+                } catch (e: Exception) {
+                    hide()
+                }
+            }
         }
     }
 
@@ -100,6 +106,7 @@ internal class Widget(context: Context) : FrameLayout(context) {
                 layoutParams = LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getSize(context, height))
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
+                settings.mediaPlaybackRequiresUserGesture = false
                 addJavascriptInterface(JSInterface(this.context, widgetId), JSInterface.NAME)
                 loadUrl(getWidgetUrl())
                 Util.debug("Starting widget: $url")
@@ -113,17 +120,21 @@ internal class Widget(context: Context) : FrameLayout(context) {
         }
     }
 
+    private fun getWidget() : WebView? {
+        return getChildAt(0) as? WebView
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         addListener(this)
-        GlobalScope.launch(Dispatchers.IO) {
-            setup()
-        }
+        setup()
+        Util.debug("Widget $widgetId attached to window")
     }
 
     override fun onDetachedFromWindow() {
         removeListener(this)
         super.onDetachedFromWindow()
+        Util.debug("Widget $widgetId detached from window")
     }
 
 }
