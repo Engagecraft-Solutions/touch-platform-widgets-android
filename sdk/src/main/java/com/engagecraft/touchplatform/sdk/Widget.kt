@@ -100,7 +100,7 @@ internal class Widget(context: Context) : FrameLayout(context) {
                 layoutParams = LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getSize(context, height))
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
-                addJavascriptInterface(JSInterface(this.context), JSInterface.NAME)
+                addJavascriptInterface(JSInterface(this.context, widgetId), JSInterface.NAME)
                 loadUrl(getWidgetUrl())
                 Util.debug("Starting widget: $url")
             })

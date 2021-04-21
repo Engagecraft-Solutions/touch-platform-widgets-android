@@ -8,7 +8,7 @@ import android.webkit.WebView
 import org.json.JSONObject
 
 
-internal class JSInterface(private val context: Context) {
+internal class JSInterface(private val context: Context, private val widgetId: String) {
     companion object {
         // JS interface name
         const val NAME = "ecTouchPlatformBridge"
@@ -49,4 +49,16 @@ internal class JSInterface(private val context: Context) {
     fun getUserID() : String? {
         return AuthManager.getUserId()
     }
+
+    @JavascriptInterface
+    fun putSettingsData(data: String?) {
+        DataManager.put(context, widgetId, data)
+        Util.debug("Saving settings ($widgetId): $data")
+    }
+
+    @JavascriptInterface
+    fun getSettingsData() : String? {
+        return DataManager.get(context, widgetId)
+    }
+
 }
