@@ -41,7 +41,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         override fun onSharedPreferenceChanged(sp: SharedPreferences, key: String) {
-            if (key == getString(R.string.settings_use_cards) || key == getString(R.string.settings_preview) || key == getString(R.string.settings_debug)) {
+            if (key == getString(R.string.settings_use_cards)) {
                 reloadResult = true
             }
             authResult = authResult && key == getString(R.string.settings_user_id)

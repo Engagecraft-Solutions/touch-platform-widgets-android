@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -22,6 +23,7 @@ import com.engagecraft.touchplatform.sdk.TouchPlatformSDK
 class MainActivity : AppCompatActivity() {
 
     companion object {
+        private const val LOG_TAG = "EC_TOUCH_DEMO"
         const val SETTINGS_REQUEST = 100
     }
 
@@ -45,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         }
         itemDecoration = DividerItemDecoration(this@MainActivity, DividerItemDecoration.VERTICAL)
         setupList()
+        initWidgetsSDK()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -66,8 +69,8 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == SETTINGS_REQUEST) {
             when (resultCode) {
-                Activity.RESULT_OK -> list.adapter?.notifyDataSetChanged()
-                SettingsActivity.RESULT_RELOAD -> setupList()
+                Activity.RESULT_OK -> setupWidgetsSDK { list.adapter?.notifyDataSetChanged() }
+                SettingsActivity.RESULT_RELOAD -> setupWidgetsSDK { setupList() }
                 SettingsActivity.RESULT_AUTH -> setupWidgetAuthState()
             }
         }
@@ -109,18 +112,34 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupWidget(parent: ViewGroup) {
         parent.removeAllViews()
+        getValue(R.string.settings_widget_id)?.let { widgetId ->
+            parent.addView(TouchPlatformSDK.getWidget(
+                this@MainActivity,
+                widgetId,
+                getDeepLink()
+            ))
+            log("Create widget $widgetId")
+        }
+    }
 
+    private fun initWidgetsSDK() {
         getValue(R.string.settings_client_id)?.let {
-            // init SDK because settings may change
+            setupWidgetsSDK()
+        } ?: run {
+            openSettings()
+        }
+    }
+    private fun setupWidgetsSDK(callback: (() -> Unit)? = null) {
+        getValue(R.string.settings_client_id)?.let {
             TouchPlatformSDK.init(
-                it,
-                getValue(R.string.settings_language),
-                getBooleanValue(R.string.settings_preview),
-                object : TouchPlatformSDK.Listener {
-                    override fun showLogin() {
-                        openSettings()
+                    it,
+                    getValue(R.string.settings_language),
+                    getBooleanValue(R.string.settings_preview),
+                    object : TouchPlatformSDK.Listener {
+                        override fun showLogin() {
+                            openSettings()
+                        }
                     }
-                }
             )
 
             setupWidgetAuthState()
@@ -130,15 +149,7 @@ class MainActivity : AppCompatActivity() {
             }
             Environment.setDebugMode(getBooleanValue(R.string.settings_debug))
 
-            getValue(R.string.settings_widget_id)?.let { widgetId ->
-                parent.addView(TouchPlatformSDK.getWidget(
-                    this@MainActivity,
-                    widgetId,
-                    getDeepLink()
-                ))
-            }
-        } ?: run {
-            openSettings()
+            callback?.invoke()
         }
     }
 
@@ -158,6 +169,10 @@ class MainActivity : AppCompatActivity() {
                 layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
         }
+    }
+
+    private fun log(msg: String) {
+        Log.d(LOG_TAG, msg)
     }
 
     private fun getDeepLink() : String {
@@ -182,15 +197,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    inner class WidgetViewHolder(parent: ViewGroup) : ViewHolder(getItemWrapper(parent)) {
+    inner class WidgetViewHolder(parent: ViewGroup) : ViewHolder(
+            getItemWrapper(parent).apply { setupWidget(this) }
+    ) {
         override fun onBind(position: Int) {
-            setupWidget(itemView as ViewGroup)
+            log("Resume/bind widget")
         }
     }
 
     inner class Adapter : RecyclerView.Adapter<ViewHolder>() {
-        private val items = 10
-        private val widgetPos = 3
+        private val items = 100
+        private val widgetPos = 2
 
         private val typeItem = 0
         private val typeWidget = 1
