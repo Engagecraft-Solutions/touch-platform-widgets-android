@@ -11,10 +11,11 @@ To run the demo app, clone the repo, and build an app (use `debug` buildType).
 Touch Platform SDK is available through public GitHub Maven repository.
 
 To acceess the repo you need to create an access token [here](https://github.com/settings/tokens/new). You only need `read:packages Download packages from GitHub Package Registry` permission.
+
 To install it you need to add it to your dependency list and sync gradle:
 
 ```groovy
-// on app/build.gradle
+// app/build.gradle
 
 // add Touch Platform SDK Maven repository
 android {
