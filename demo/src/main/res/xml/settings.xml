@@ -8,6 +8,7 @@
             android:key="@string/settings_client_id"
             android:icon="@drawable/ic_client"
             android:title="Client ID"
+            android:defaultValue="@string/settings_client_id_default"
             app:useSimpleSummaryProvider="true" />
         <EditTextPreference
             android:key="@string/settings_widget_id"
@@ -53,6 +54,6 @@
             android:key="@string/settings_use_custom_scheme"
             android:icon="@drawable/ic_share"
             android:title="Use Custom Scheme for sharing"
-            android:defaultValue="false"/>
+            android:defaultValue="true"/>
     </PreferenceCategory>
 </PreferenceScreen>

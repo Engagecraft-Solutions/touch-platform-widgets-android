@@ -125,6 +125,9 @@ class MainActivity : AppCompatActivity() {
     private fun initWidgetsSDK() {
         getValue(R.string.settings_client_id)?.let {
             setupWidgetsSDK()
+            if (TextUtils.isEmpty(getValue(R.string.settings_widget_id))) {
+                openSettings()
+            }
         } ?: run {
             openSettings()
         }

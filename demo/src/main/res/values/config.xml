@@ -19,4 +19,5 @@
         <item>pre</item>
         <item>release</item>
     </string-array>
+    <string name="settings_client_id_default">bRUVL8o0KiMIDRBKojxECtTWp</string>
 </resources>
