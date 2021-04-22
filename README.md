@@ -98,6 +98,27 @@ In that case the app should handle the request:
 2. After user logs in provide user id to Touch Platform SDK by calling `TouchPlatformSDK.login(userID)`.
 
 
+## Java support
+
+The SDK is written on Kotlin language and all the examples uses Kotlin language. To use the SDK on Java you need to use the library this way (throught the Companion object):
+```java
+// uses Java 1.8 features
+
+// initialization
+TouchPlatformSDK.Companion.init(__CLIENT_ID__, "en", false, () -> {
+  openLoginScreen()
+});
+
+// widget creation
+TouchPlatformSDK.Companion.getWidget(this, __WIDGET_ID__, "https://...");
+
+// user login
+TouchPlatformSDK.Companion.login("");
+
+// user logout
+TouchPlatformSDK.Companion.logout();
+```
+
 ## License
 
 Copyright Engagecraft Solutions
