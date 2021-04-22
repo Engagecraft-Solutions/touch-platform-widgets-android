@@ -8,11 +8,30 @@ To run the demo app, clone the repo, and build an app (use `debug` buildType).
 
 ## Installation
 
-Touch Platform SDK is available through public GitHub Maven repository.
-To install it you neeed to add it to your dependency list and sync gradle:
+Touch Platform SDK is available through public GitHub Maven repository. To acceess the repo you need to create an access token [here](https://github.com/settings/tokens/new). You only need `read:packages Download packages from GitHub Package Registry` pernmission.
+To install it you need to add it to your dependency list and sync gradle:
 
 ```groovy
+// on app/build.gradle
+
+// add Touch Platform SDK Maven repository
+android {
+  repositories {
+    maven {
+      url = uri("https://maven.pkg.github.com/engagecraft-solutions/touch-platform-widgets-android")
+      credentials {
+        username "__YOUR_USERNAME__"
+        password "__YOUR_TOKEN__" // create your access token here: https://github.com/settings/tokens/new
+      }
+    }
+  }
+}
+
+// add a dependency
+dependencies {
+  ...
   implementation 'com.engagecraft:touchplatform-sdk:0.9.0'
+}
 ```
 
 ## Usage
