@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.lang.ref.SoftReference
 
 internal class Widget(context: Context) : FrameLayout(context) {
     companion object {
@@ -23,16 +24,16 @@ internal class Widget(context: Context) : FrameLayout(context) {
         private const val PARAM_LOCATION = "location"
         internal const val PARAM_USER_ID = "userID"
 
-        private val listeners: MutableList<Widget> = mutableListOf()
+        private val listeners: MutableList<SoftReference<Widget>> = mutableListOf()
         private fun addListener(widget: Widget) {
-            listeners.add(widget)
+            listeners.add(SoftReference(widget))
         }
         private fun removeListener(widget: Widget) {
-            listeners.remove(widget)
+            listeners.removeAll { it.get() == widget }
         }
         fun notify(event: String, data: JSONObject? = null) {
             listeners.forEach {
-                JSInterface.notify(it.getWidget(), event, data)
+                JSInterface.notify(it.get()?.getWidget(), event, data)
             }
         }
 
