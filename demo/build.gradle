@@ -7,6 +7,15 @@ android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
+    signingConfigs {
+        release {
+            storeFile file('keystore.jks')
+            storePassword '0Cu%RDN@FvfZ'
+            keyAlias 'signing'
+            keyPassword 'zlrmVsA6S8P%'
+        }
+    }
+
     defaultConfig {
         applicationId "com.engagecraft.touchplatform.demo"
         minSdkVersion 21
@@ -18,12 +27,21 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
+            shrinkResources false
+            debuggable true
         }
         pre {
             minifyEnabled true
+            shrinkResources false
+            debuggable false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         release {
             minifyEnabled true
+            shrinkResources false
+            debuggable false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         all {

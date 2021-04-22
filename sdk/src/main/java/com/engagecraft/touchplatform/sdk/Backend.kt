@@ -1,5 +1,6 @@
 package com.engagecraft.touchplatform.sdk
 
+import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -45,21 +46,25 @@ internal class Backend {
         }
     }
 
+    @Keep
     data class Response<T>(
         @SerializedName("data") var data: T?,
         @SerializedName("error") var error: Error?
     )
 
+    @Keep
     data class Error(
         @SerializedName("type") var type: String,
         @SerializedName("message") var message: String
     )
 
+    @Keep
     data class Availability(
         @SerializedName("available") var available: Boolean,
         @SerializedName("params") var params: Params?
     )
 
+    @Keep
     data class Params(
         @SerializedName("height") var height: Int
     )

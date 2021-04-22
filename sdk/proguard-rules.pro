@@ -19,3 +19,8 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# keep public APIs for SDK
+-keep class com.engagecraft.touchplatform.sdk.TouchPlatformSDK$Companion {
+    <methods>;
+}
