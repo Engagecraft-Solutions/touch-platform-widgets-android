@@ -21,6 +21,14 @@
 #-renamesourcefileattribute SourceFile
 
 # keep public APIs for SDK
+-keepclassmembers class com.engagecraft.touchplatform.sdk.TouchPlatformSDK {
+    public static ** Companion;
+}
+-keep interface com.engagecraft.touchplatform.sdk.TouchPlatformSDK$Listener {
+    <methods>;
+}
 -keep class com.engagecraft.touchplatform.sdk.TouchPlatformSDK$Companion {
     <methods>;
 }
+
+-keepparameternames
