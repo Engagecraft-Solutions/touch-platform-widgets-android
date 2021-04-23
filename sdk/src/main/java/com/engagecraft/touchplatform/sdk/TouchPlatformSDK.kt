@@ -43,7 +43,7 @@ class TouchPlatformSDK {
 
     }
 
-    interface Listener {
+    fun interface Listener {
         fun showLogin()
     }
 

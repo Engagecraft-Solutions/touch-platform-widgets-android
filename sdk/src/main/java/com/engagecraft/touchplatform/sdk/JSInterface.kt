@@ -58,7 +58,9 @@ internal class JSInterface(private val context: Context, private val widgetId: S
 
     @JavascriptInterface
     fun getSettingsData() : String? {
-        return DataManager.get(context, widgetId)
+        return DataManager.get(context, widgetId).apply {
+            Util.debug("Getting settings ($widgetId): $this")
+        }
     }
 
 }

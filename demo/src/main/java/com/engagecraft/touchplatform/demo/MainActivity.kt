@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -23,7 +22,6 @@ import com.engagecraft.touchplatform.sdk.TouchPlatformSDK
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        private const val LOG_TAG = "EC_TOUCH_DEMO"
         const val SETTINGS_REQUEST = 100
     }
 
@@ -59,6 +57,10 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.menu_settings -> {
                 openSettings()
+                true
+            }
+            R.id.menu_log -> {
+                startActivity(Intent(this, LogActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -118,7 +120,7 @@ class MainActivity : AppCompatActivity() {
                 widgetId,
                 getDeepLink()
             ))
-            log("Create widget $widgetId")
+            LogActivity.log("Create widget $widgetId")
         }
     }
 
@@ -137,13 +139,8 @@ class MainActivity : AppCompatActivity() {
             TouchPlatformSDK.init(
                     it,
                     getValue(R.string.settings_language),
-                    getBooleanValue(R.string.settings_preview),
-                    object : TouchPlatformSDK.Listener {
-                        override fun showLogin() {
-                            openSettings()
-                        }
-                    }
-            )
+                    getBooleanValue(R.string.settings_preview)
+            ) { openSettings() }
 
             setupWidgetAuthState()
 
@@ -151,6 +148,7 @@ class MainActivity : AppCompatActivity() {
                 Environment.setEnvironment(env)
             }
             Environment.setDebugMode(getBooleanValue(R.string.settings_debug))
+            Environment.setLogListener { msg -> LogActivity.saveLog(msg) }
 
             callback?.invoke()
         }
@@ -172,10 +170,6 @@ class MainActivity : AppCompatActivity() {
                 layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
         }
-    }
-
-    private fun log(msg: String) {
-        Log.d(LOG_TAG, msg)
     }
 
     private fun getDeepLink() : String {
@@ -204,7 +198,7 @@ class MainActivity : AppCompatActivity() {
             getItemWrapper(parent).apply { setupWidget(this) }
     ) {
         override fun onBind(position: Int) {
-            log("Resume/bind widget")
+            LogActivity.log("Resume/bind widget")
         }
     }
 

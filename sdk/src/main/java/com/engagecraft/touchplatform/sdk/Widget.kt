@@ -5,6 +5,8 @@ import android.content.Context
 import android.net.Uri
 import android.util.TypedValue
 import android.view.ViewGroup
+import android.webkit.ConsoleMessage
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.widget.FrameLayout
 import kotlinx.coroutines.Dispatchers
@@ -12,6 +14,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.lang.ref.SoftReference
+
 
 internal class Widget(context: Context) : FrameLayout(context) {
     companion object {
@@ -67,7 +70,7 @@ internal class Widget(context: Context) : FrameLayout(context) {
     private fun setup() {
         getWidget()?.let { widget ->
             AuthManager.getUserId()?.let {
-                JSInterface.notify(widget, JSInterface.EVENT_LOGIN, JSONObject().apply { put(PARAM_USER_ID, it) })
+                JSInterface.notify(widget, JSInterface.EVENT_LOGIN, Util.getLoginEventData())
             } ?: run {
                 JSInterface.notify(widget, JSInterface.EVENT_LOGOUT)
             }
@@ -104,10 +107,19 @@ internal class Widget(context: Context) : FrameLayout(context) {
     private fun show(height: Int) {
         GlobalScope.launch(Dispatchers.Main) {
             addView(WebView(context).apply {
-                layoutParams = LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getSize(context, height))
+                layoutParams = LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    getSize(context, height)
+                )
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 settings.mediaPlaybackRequiresUserGesture = false
+                webChromeClient = object : WebChromeClient() {
+                    override fun onConsoleMessage(m: ConsoleMessage): Boolean {
+                        Util.debug("WebView log ($widgetId) - [${m.messageLevel()}] ${m.message()}")
+                        return true
+                    }
+                }
                 addJavascriptInterface(JSInterface(this.context, widgetId), JSInterface.NAME)
                 loadUrl(getWidgetUrl())
                 Util.debug("Starting widget: $url")
