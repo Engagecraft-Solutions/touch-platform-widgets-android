@@ -4,8 +4,8 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     signingConfigs {
         release {
@@ -18,10 +18,10 @@ android {
 
     defaultConfig {
         applicationId "com.engagecraft.touchplatform.demo"
-        minSdkVersion 21
-        targetSdkVersion 30
-        versionCode 1
-        versionName "0.9.0"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode rootProject.ext.versionCode
+        versionName rootProject.ext.versionName
     }
 
     buildTypes {
@@ -55,6 +55,17 @@ android {
     kotlinOptions {
         useIR = true
         jvmTarget = '1.8'
+    }
+
+    publishing {
+        publications {
+            demo(MavenPublication) {
+                groupId 'com.engagecraft'
+                artifactId 'touchplatform-sdk-demo-app'
+                version defaultConfig.versionName
+                artifact("$buildDir/outputs/apk/debug/demo-debug.apk")
+            }
+        }
     }
 }
 

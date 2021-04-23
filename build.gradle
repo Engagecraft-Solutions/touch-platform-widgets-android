@@ -1,6 +1,8 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext.kotlin_version = "1.4.32"
+    ext {
+        kotlin_version = "1.4.32"
+    }
     repositories {
         google()
         jcenter()
@@ -14,11 +16,38 @@ buildscript {
     }
 }
 
+plugins {
+    id 'maven-publish'
+}
+
 allprojects {
     repositories {
         google()
         jcenter()
     }
+
+    publishing {
+        repositories {
+            maven {
+                name = "TouchPlatformSDK"
+                description = 'Touch Platform Widgets for Android'
+                url = uri("https://maven.pkg.github.com/engagecraft-solutions/touch-platform-sdk-android")
+                credentials {
+                    username = project.findProperty("gpr.usr") ?: System.getenv("GPR_USER")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GPR_API_KEY")
+                }
+            }
+        }
+    }
+}
+
+ext {
+    versionCode = 1
+    versionName = "0.9.10"
+    minSdkVersion = 21
+    targetSdkVersion = 30
+    compileSdkVersion = 30
+    buildToolsVersion = "30.0.3"
 }
 
 task clean(type: Delete) {
