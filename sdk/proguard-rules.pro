@@ -23,6 +23,7 @@
 # keep public APIs for SDK
 -keepclassmembers class com.engagecraft.touchplatform.sdk.TouchPlatformSDK {
     public static ** Companion;
+    <methods>;
 }
 -keep interface com.engagecraft.touchplatform.sdk.TouchPlatformSDK$Listener {
     <methods>;
